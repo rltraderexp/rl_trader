@@ -1,0 +1,38 @@
+# Python dependencies for the rl_trading_project.
+# Install these using the command: pip install -r requirements.txt
+
+# --- Core Data Science & Machine Learning Libraries ---
+numpy>=1.21.0
+pandas>=1.4.0
+scikit-learn>=1.0.0
+scipy>=1.8.0
+
+# --- PyTorch for Reinforcement Learning Agents ---
+# Note: The line below installs the CPU-only version of PyTorch.
+# For GPU support (recommended for performance), please visit the official site:
+# https://pytorch.org/get-started/locally/
+# and install the version that matches your system's CUDA toolkit.
+torch>=1.12.0
+
+# --- RL Environment & Compatibility ---
+# Gymnasium is the maintained fork of OpenAI Gym, used for environment
+# wrappers and vectorization. This project uses the Gymnasium API.
+gymnasium
+
+# --- Utilities, Data Validation, and Reporting ---
+# For creating plots and PDF reports.
+matplotlib>=3.5.0
+
+# For data validation schemas.
+pydantic>=1.9.0
+
+# --- Optional Dependencies ---
+
+# The 'tirex' library is used by the forecasting adapter but is not a hard
+# requirement. The adapter will fall back to a stub if it is not installed.
+# To use it, you must install it separately from its source repository:
+# https://github.com/NX-AI/tirex
+#
+# You can uncomment the line below if you have git installed and wish to
+# install it directly, though manual installation is recommended.
+# # tirex @ git+https://github.com/NX-AI/tirex.git
