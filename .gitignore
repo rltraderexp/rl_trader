@@ -1,0 +1,77 @@
+# --- Virtual Environments ---
+# Ignore the virtual environment directory created by uv, venv, or virtualenv.
+/.venv/
+/venv/
+/.env/
+/env/
+
+# --- Python Artifacts ---
+# Byte-compiled / optimized / C extension files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+/build/
+/dist/
+/.eggs/
+/*.egg-info/
+*.egg
+*.spec
+
+# --- Project-Specific Generated Files ---
+# Experiment logs and model checkpoints from ExperimentLogger
+/runs/
+
+# Backtest results and reports
+*_history.csv
+*.pdf
+
+# Walk-forward backtesting output
+/walkforward_out/
+
+# --- IDE / Editor Configuration ---
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# --- Testing and Coverage ---
+# Coverage reports
+.coverage
+.coverage.*
+/htmlcov/
+
+# Pytest cache
+.pytest_cache/
+
+# --- Jupyter Notebooks ---
+# Notebook checkpoints
+.ipynb_checkpoints
+
+# --- Operating System Files ---
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# --- Logs ---
+# General log files
+*.log
+logs/
+
+# --- Secrets ---
+# Environment variables and credentials file.
+# NEVER commit sensitive information to your repository.
+.env
+*.env
+secrets.ini
+credentials.json
