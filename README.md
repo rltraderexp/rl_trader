@@ -70,7 +70,7 @@ First, clone this project from GitHub to your local machine.
 
 ```bash
 git clone https://github.com/rltraderexp/rl_trader.git
-cd rl_trading_project
+cd rl_trader
 ```
 *(Replace `your-username/rl_trading_project.git` with the actual URL of your repository)*
 
