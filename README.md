@@ -1,4 +1,4 @@
-# RL Trading Project v3
+# RL Trading Project
 
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -38,26 +38,45 @@ The framework is designed for flexibility, allowing users to easily swap out age
 The project is organized into modular components to facilitate research and development.
 
 ```
-rl_trading_project/
-├── agents/         # RL agent implementations (DQN, PPO).
-├── data/           # Data loaders and schema validation.
-├── envs/           # Trading environments (single-asset, portfolio, options).
-├── execution/      # Market execution simulators (e.g., order book).
-├── features/       # Feature engineering utilities (RSI, ATR, etc.).
-├── forecasting/    # Adapters for external forecasting models.
-├── options/        # Tools for options pricing, IV surfaces, and hedging.
-├── preprocessing/  # Data scaling and normalization tools.
-├── trainers/       # Backtesting, training loops, and reporting tools.
-└── utils/          # Experiment logging and other utilities.
+rl_trading_v3/
+├── rl_trading_project/ # The main source code for the trading framework.
+│   ├── agents/         # RL agent implementations (DQN, PPO).
+│   ├── data/           # Data loaders and schema validation.
+│   ├── envs/           # Trading environments (single-asset, portfolio, options).
+│   ├── execution/      # Market execution simulators (e.g., order book).
+│   ├── features/       # Feature engineering utilities (RSI, ATR, etc.).
+│   ├── forecasting/    # Adapters for external forecasting models.
+│   ├── options/        # Tools for options pricing, IV surfaces, and hedging.
+│   ├── preprocessing/  # Data scaling and normalization tools.
+│   ├── trainers/       # Backtesting, training loops, and reporting tools.
+│   └── utils/          # Experiment logging and other utilities.
+│
+└── tests/              # Unit tests and runnable demo scripts.
+    ├── test_core_logic.py
+    └── run_env_demo.py
+    ...
 ```
+
+-   **`rl_trading_project/`**: Contains the core, importable Python package with all the framework's logic.
+-   **`tests/`**: Contains scripts for validation and demonstration. This includes formal unit tests (`test_core_logic.py`) to ensure components work as expected, and runnable demo scripts (`run_*.py`) that showcase key functionalities.
 
 ## Installation
 
 This project uses `uv` for fast and reliable package management.
 
-#### 1. Prerequisites
+#### 1. Clone the Repository
 
-First, ensure you have `uv` installed.
+First, clone this project from GitHub to your local machine.
+
+```bash
+git clone https://github.com/rltraderexp/rl_trading_project.git
+cd rl_trading_project
+```
+*(Replace `your-username/rl_trading_project.git` with the actual URL of your repository)*
+
+#### 2. Prerequisites
+
+Next, ensure you have `uv` installed. If you don't, run the appropriate command for your system:
 
 ```bash
 # On macOS and Linux
@@ -67,9 +86,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 irm https://astral.sh/uv/install.ps1 | iex
 ```
 
-#### 2. Create and Activate a Virtual Environment
+#### 3. Create and Activate a Virtual Environment
 
-Navigate to the project's root directory (`rl_trading_v3`) and create a virtual environment.
+From the project's root directory (`rl_trading_project`), create a virtual environment.
 
 ```bash
 uv venv
@@ -85,7 +104,7 @@ source .venv/bin/activate
 .venv\Scripts\Activate.ps1
 ```
 
-#### 3. Install Dependencies
+#### 4. Install Dependencies
 
 Install all required packages from the `requirements.txt` file.
 
@@ -93,7 +112,7 @@ Install all required packages from the `requirements.txt` file.
 uv pip install -r requirements.txt
 ```
 
-#### 4. Install the Project in Editable Mode
+#### 5. Install the Project in Editable Mode
 
 Install the `rl_trading_project` package itself in editable mode. This allows you to make changes to the source code that are immediately available to your scripts.
 
@@ -121,7 +140,7 @@ The project includes several demo scripts to showcase its capabilities. You can 
 
 #### 1. Basic Environment Demo
 
-This script runs a simple buy/sell strategy in the `SimpleEnv` to verify that the core environment logic is working.
+This script, located in the `tests` folder, runs a simple buy/sell strategy in the `SimpleEnv` to verify that the core environment logic is working.
 
 ```bash
 python -m tests.run_env_demo
@@ -185,4 +204,4 @@ This framework is designed to be a foundation for your own research. Here are so
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License.
