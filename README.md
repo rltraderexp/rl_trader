@@ -69,7 +69,7 @@ This project uses `uv` for fast and reliable package management.
 First, clone this project from GitHub to your local machine.
 
 ```bash
-git clone https://github.com/rltraderexp/rl_trading_project.git
+git clone https://github.com/rltraderexp/rl_trader.git
 cd rl_trading_project
 ```
 *(Replace `your-username/rl_trading_project.git` with the actual URL of your repository)*
