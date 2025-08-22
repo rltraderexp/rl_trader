@@ -85,15 +85,35 @@ class PortfolioEnv:
         return self._get_obs(), {}
 
     def _get_obs(self) -> Dict[str, Any]:
-        current_ts = self.timestamps[self._current_ts_idx]
-        start_ts = self.timestamps[self._current_ts_idx - self.window_size]
+        # Define the exact timestamps we expect for the full window
+        start_idx = self._current_ts_idx - self.window_size
+        end_idx = self._current_ts_idx + 1
+        expected_timestamps = self.timestamps[start_idx:end_idx]
+        current_ts = expected_timestamps[-1]
         
-        # Efficiently slice the window for all assets
-        window_df = self.df.loc[(slice(start_ts, current_ts), self.assets), self.obs_cols]
-        window_vals = window_df.values.reshape(self.window_size + 1, self.n_assets, len(self.obs_cols))
-        obs_window = window_vals[:-1, :, :].transpose(1, 0, 2) # (n_assets, window_size, n_features)
+        all_asset_windows = []
+        current_prices_list = []
 
-        current_prices = window_df.loc[current_ts].values[:, 3] # Close prices
+        # FIX: Handle sparse data by processing each asset individually.
+        for asset in self.assets:
+            # Select all data for the current asset
+            asset_df = self.df.xs(asset, level='asset', drop_level=True)
+            
+            # Reindex to match the expected timestamps, forward-filling gaps
+            # This ensures each asset window has the exact same shape.
+            asset_window_df = asset_df.reindex(expected_timestamps, method='ffill').fillna(0.0)
+            
+            all_asset_windows.append(asset_window_df[self.obs_cols].values)
+            current_prices_list.append(asset_window_df['close'].iloc[-1])
+
+        # Stack the individual asset windows into a single numpy array
+        # Shape becomes (n_assets, window_size + 1, n_features)
+        full_window_vals = np.stack(all_asset_windows, axis=0)
+        
+        # The observation uses all but the last timestamp
+        obs_window = full_window_vals[:, :-1, :]
+        current_prices = np.array(current_prices_list, dtype=np.float32)
+
         equity = self.cash + (self.positions * current_prices).sum()
         notional_value = np.abs(self.positions * current_prices).sum()
         leverage = notional_value / (equity + 1e-12)
@@ -113,18 +133,20 @@ class PortfolioEnv:
 
     def step(self, actions: np.ndarray):
         if self.done:
-            # If the environment is already done, do not step further.
-            # Return the last observation, a zero reward, and indicate termination.
-            # This makes the environment compatible with fixed-length rollout collectors.
             return self._get_obs(), 0.0, True, False, {}
         
         actions = np.clip(np.asarray(actions, dtype=np.float32), -1.0, 1.0)
-        current_prices = self.df.loc[self.timestamps[self._current_ts_idx], 'close'].values
-        equity = self.cash + (self.positions * current_prices).sum()
+        
+        # Get current prices for all assets using the robust _get_obs method's logic
+        obs_data = self._get_obs()
+        current_prices = obs_data['current_prices']
+        equity = obs_data['total_value']
 
         target_leverage_fracs = actions
+        # Ensure target_notionals calculation is robust to assets with zero price
+        safe_prices = current_prices + 1e-12
         target_notionals = target_leverage_fracs * self.max_leverage * equity / self.n_assets
-        target_positions = target_notionals / (current_prices + 1e-12)
+        target_positions = target_notionals / safe_prices
         trades = target_positions - self.positions
         
         exec_prices = current_prices * (1.0 + np.sign(trades) * self.slippage)
@@ -141,19 +163,18 @@ class PortfolioEnv:
             self.done = True
             self._current_ts_idx = len(self.timestamps) - 1
 
-        mark_prices = self.df.loc[self.timestamps[self._current_ts_idx], 'close'].values
+        # MTM with next tick's prices
+        next_obs_data = self._get_obs()
+        mark_prices = next_obs_data['current_prices']
         prev_total = self.total_value
-        position_values = self.positions * mark_prices
-        self.total_value = self.cash + position_values.sum()
+        self.total_value = next_obs_data['total_value']
         pnl = self.total_value - prev_total
 
         self.peak_equity = max(self.peak_equity, self.total_value)
         self.drawdown = (self.peak_equity - self.total_value) / (self.peak_equity + 1e-12)
 
-        notional = np.abs(position_values).sum()
-        leverage = notional / (self.total_value + 1e-12)
         margin_called = False
-        if (self.total_value <= 0) or (leverage / self.max_leverage > self.maintenance_margin_ratio):
+        if self.total_value <= 0 or next_obs_data['leverage'] / self.max_leverage > self.maintenance_margin_ratio:
             liq_comm = np.abs(self.positions * mark_prices) * self.commission
             self.cash += (self.positions * mark_prices).sum() - liq_comm.sum()
             self.positions.fill(0.0)
@@ -169,16 +190,12 @@ class PortfolioEnv:
             reward = float(pnl)
 
         info = {
-            'positions': self.positions,
-            'cash': self.cash,
-            'total_value': self.total_value,
-            'pnl': pnl,
-            'margin_called': margin_called,
-            'leverage': leverage,
+            'positions': self.positions, 'cash': self.cash, 'total_value': self.total_value,
+            'pnl': pnl, 'margin_called': margin_called, 'leverage': next_obs_data['leverage'],
             'drawdown': self.drawdown
         }
         self.steps += 1
-        return self._get_obs(), reward, self.done, False, info
+        return next_obs_data, reward, self.done, False, info
 
     def render(self, mode='human'):
         print(f"Time: {self.timestamps[self._current_ts_idx]}, Total Value: {self.total_value:.2f}")

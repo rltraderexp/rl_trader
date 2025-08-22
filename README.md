@@ -18,6 +18,9 @@ The framework is designed for flexibility, allowing users to easily swap out age
     -   `PortfolioEnv`: A multi-asset environment simulating portfolio management with leverage, margin calls, and risk-adjusted rewards.
     -   `OptionsEnv`: A specialized environment for trading options and their underlying assets, featuring delta hedging and Black-Scholes pricing.
 
+-   **High-Performance Data Pipeline**:
+    -   Includes a high-performance data pipeline powered by DuckDB. Ingest raw gzipped CSV files into a fast, persistent columnar database, with built-in support for de-duplication and data gap analysis.
+
 -   **Realistic Execution Simulation**:
     -   Includes a simple order book model (`OrderbookEnv`) that simulates market impact and slippage, providing more realistic fills than a fixed percentage.
 
@@ -38,10 +41,10 @@ The framework is designed for flexibility, allowing users to easily swap out age
 The project is organized into modular components to facilitate research and development.
 
 ```
-rl_trading_v3/
+rl_trading_project/
 ├── rl_trading_project/ # The main source code for the trading framework.
 │   ├── agents/         # RL agent implementations (DQN, PPO).
-│   ├── data/           # Data loaders and schema validation.
+│   ├── data/           # Data loaders (CSV, DuckDB) and schema validation.
 │   ├── envs/           # Trading environments (single-asset, portfolio, options).
 │   ├── execution/      # Market execution simulators (e.g., order book).
 │   ├── features/       # Feature engineering utilities (RSI, ATR, etc.).
@@ -136,9 +139,23 @@ uv pip install -e .
 
 ## Getting Started: Running the Demos
 
-The project includes several demo scripts to showcase its capabilities. You can run them from the project's root directory.
+The project includes several demo scripts and notebooks to showcase its capabilities. You can run them from the project's root directory.
 
-#### 1. Basic Environment Demo
+#### 1. Agent Training and Comparison Notebook
+
+The `Training_and_Comparison_Example.ipynb` notebook provides a complete walkthrough of:
+1.  Ingesting raw data into a DuckDB database.
+2.  Training a multi-asset PPO agent.
+3.  Training a single-asset DQN agent.
+4.  Backtesting both agents and comparing their performance.
+
+To run it, start Jupyter Lab:
+```bash
+jupyter lab
+```
+Then, open and run the cells in `Training_and_Comparison_Example.ipynb`.
+
+#### 2. Basic Environment Demo
 
 This script, located in the `tests` folder, runs a simple buy/sell strategy in the `SimpleEnv` to verify that the core environment logic is working.
 
@@ -146,7 +163,7 @@ This script, located in the `tests` folder, runs a simple buy/sell strategy in t
 python -m tests.run_env_demo
 ```
 
-#### 2. Multi-Asset Portfolio Demo
+#### 3. Multi-Asset Portfolio Demo
 
 See the `PortfolioEnv` in action, managing a portfolio of three synthetic assets with a simple long/short policy.
 
@@ -154,24 +171,7 @@ See the `PortfolioEnv` in action, managing a portfolio of three synthetic assets
 python -m tests.run_portfolio_demo
 ```
 
-#### 3. Options Delta Hedging Demo
-
-Run a strategy that sells call options while the environment automatically delta-hedges the position.
-
-```bash
-python -m rl_trading_project.options.delta_hedge_demo
-```
-
-#### 4. Strategy Comparison and Reporting
-
-This demo backtests two different option-selling strategies ("Hedged" vs. "Unhedged") using the `Backtester`, saves the results to CSV files, and prints a comparison.
-
-```bash
-python -m rl_trading_project.trainers.demo_compare_strategies
-```
-After running, you can inspect the generated `Hedged_history.csv` and `Unhedged_history.csv` files.
-
-#### 5. Train a PPO Agent
+#### 4. Train a PPO Agent
 
 Run a complete training loop for the PPO agent on the multi-asset `PortfolioEnv`. This script demonstrates feature engineering, data scaling, vectorized environments, and experiment logging.
 
@@ -183,6 +183,8 @@ Training logs and model checkpoints will be saved to a new directory inside `run
 ## Core Components
 
 -   **Agents (`agents/`)**: The "brains" of the trading system. The `PPOAgent` is highly configurable, with different network architectures suitable for various observation types (flat vectors, time-series, etc.).
+
+-   **Data (`data/`)**: High-performance data loaders. `duckdb_loader.py` provides robust ingestion from raw files into a columnar store, while `csv_loader.py` handles single files.
 
 -   **Environments (`envs/`)**: The simulation engine. They define the state, actions, and rewards. The `PortfolioEnv` is the most advanced, handling multi-asset dynamics, while `OptionsEnv` is tailored for derivatives trading. All environments follow the Gymnasium API.
 
@@ -196,7 +198,7 @@ Training logs and model checkpoints will be saved to a new directory inside `run
 
 This framework is designed to be a foundation for your own research. Here are some ways you can extend it:
 
--   **Integrate Real Data**: Modify `data/csv_loader.py` or add new loaders to work with your own market data sources.
+-   **Integrate Real Data**: Use `data/duckdb_loader.py` to ingest your own data from a `raw/` directory, or modify `data/csv_loader.py` to work with other formats.
 -   **Implement a New Agent**: Create a new agent class that inherits from `agents/base.py`.
 -   **Design a Custom Reward Function**: Implement new reward shaping functions in `trainers/reward_shapers.py` to guide the agent toward different objectives (e.g., maximizing Sharpe ratio, minimizing drawdown).
 -   **Add New Features**: Add new technical indicators or alternative features to `features/basic_features.py`.

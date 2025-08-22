@@ -17,6 +17,26 @@ import torch.nn as nn
 import torch.optim as optim
 from .base import Agent
 
+
+# -----------------------
+# original MLP policy
+# -----------------------
+class PolicyNetMLP(nn.Module):
+    def __init__(self, obs_dim, action_dim, hidden=(64,64)):
+        super().__init__()
+        layers = []
+        last = obs_dim
+        for h in hidden:
+            layers.append(nn.Linear(last,h)); layers.append(nn.ReLU()); last = h
+        self.body = nn.Sequential(*layers)
+        self.mean = nn.Linear(last, action_dim)
+        self.logstd = nn.Parameter(torch.zeros(action_dim))
+    def forward(self, x):
+        x = self.body(x)
+        mean = self.mean(x)
+        std = torch.exp(self.logstd)
+        return mean, std
+
 # -----------------------
 # Small Transformer encoder head and positional encoding
 # -----------------------
@@ -126,7 +146,7 @@ class ValueNet(nn.Module):
             h = x.permute(0,2,1)
             h = self.encoder(h).squeeze(-1)
             return self.head(h)
-
+    
 # -----------------------
 # PPO Agent
 # -----------------------
@@ -170,22 +190,6 @@ class PPOAgent(Agent):
 
         # build policy net depending on requested type
         if policy_type == 'mlp':
-            # original MLP
-            class PolicyNetMLP(nn.Module):
-                def __init__(self, obs_dim, action_dim, hidden=(64,64)):
-                    super().__init__()
-                    layers = []
-                    last = obs_dim
-                    for h in hidden:
-                        layers.append(nn.Linear(last,h)); layers.append(nn.ReLU()); last = h
-                    self.body = nn.Sequential(*layers)
-                    self.mean = nn.Linear(last, action_dim)
-                    self.logstd = nn.Parameter(torch.zeros(action_dim))
-                def forward(self, x):
-                    x = self.body(x)
-                    mean = self.mean(x)
-                    std = torch.exp(self.logstd)
-                    return mean, std
             self.policy = PolicyNetMLP(self.obs_dim, self.action_dim).to(device)
             self.value = ValueNet(input_dim=self.obs_dim, mode='mlp').to(device)
         elif policy_type == 'conv1d':

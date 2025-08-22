@@ -31,6 +31,9 @@ __pycache__/
 # Walk-forward backtesting output
 /walkforward_out/
 
+# --- Data ---
+*.duckdb
+
 # --- IDE / Editor Configuration ---
 # Visual Studio Code
 .vscode/

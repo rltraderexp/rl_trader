@@ -1,7 +1,7 @@
 """Dueling DQN implementation (PyTorch) where network outputs Q-values for all discrete action bins."""
 import os, math, random
 import numpy as np
-from typing import Tuple
+from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,7 +9,10 @@ from .base import Agent
 from .prioritized_replay_buffer import PrioritizedReplayBuffer
 
 class DuelingDQNNet(nn.Module):
-    def __init__(self, input_dim: int, action_bins: int = 11, hidden_sizes: Tuple[int, ...] = (128,128)):
+    def __init__(self, 
+                 input_dim: int, 
+                 action_bins: int = 11, 
+                 hidden_sizes: Tuple[int, ...] = (128,128)):
         super().__init__()
         layers = []
         last = input_dim
@@ -32,12 +35,25 @@ class DuelingDQNNet(nn.Module):
         return q
 
 class DuelingDQNAgent(Agent):
-    def __init__(self, obs_dim: int, action_bins: int = 11, hidden=(128,128), lr=1e-3, gamma=0.99, buffer_size=50000, batch_size=64,
-                 per_alpha=0.6, per_beta_start=0.4, per_beta_anneal_steps=100000, device='cpu'):
+    def __init__(self, 
+                 obs_dim: int, 
+                 action_bins: int = 11, 
+                 hidden=(128,128), 
+                 lr=1e-3, 
+                 gamma=0.99, 
+                 buffer_size=50000, 
+                 batch_size=64,
+                 per_alpha=0.6, 
+                 per_beta_start=0.4, 
+                 per_beta_anneal_steps=100000, 
+                 seed: Optional[int] = None, 
+                 device='cpu'):
         """
         Action is discretized into `action_bins` in [-1,1]. Network outputs a Q-vector of size action_bins.
         Now uses Prioritized Experience Replay.
         """
+        if seed is not None:
+            random.seed(seed); np.random.seed(seed); torch.manual_seed(seed)
         self.obs_dim = int(obs_dim)
         self.action_bins = int(action_bins)
         self.device = device

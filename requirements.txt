@@ -19,6 +19,12 @@ torch>=1.12.0
 # wrappers and vectorization. This project uses the Gymnasium API.
 gymnasium
 
+# --- Data Ingestion and Storage ---
+# DuckDB for high-performance columnar data storage.
+duckdb>=0.9.0
+# PyArrow is often used by DuckDB for efficient data interchange with Pandas.
+pyarrow
+
 # --- Utilities, Data Validation, and Reporting ---
 # For creating plots and PDF reports.
 matplotlib>=3.5.0
