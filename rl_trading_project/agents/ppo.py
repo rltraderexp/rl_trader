@@ -337,6 +337,7 @@ class PPOAgent(Agent):
         idxs = np.arange(N)
 
         policy_loss_total, value_loss_total, num_updates = 0.0, 0.0, 0
+        policy_grad_norm_total, value_grad_norm_total = 0.0, 0.0
         for epoch in range(self.epochs):
             np.random.shuffle(idxs)
             for start in range(0, N, batch_size):
@@ -356,6 +357,8 @@ class PPOAgent(Agent):
 
                 self.policy_optimizer.zero_grad()
                 policy_loss.backward()
+                # Calculate total norm of gradients
+                policy_grad_norm = torch.sqrt(sum(p.grad.pow(2).sum() for p in self.policy.parameters() if p.grad is not None))
                 if self.max_grad_norm > 0:
                     torch.nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
                 self.policy_optimizer.step()
@@ -364,12 +367,16 @@ class PPOAgent(Agent):
                 value_pred = self.value(mb_obs if self.policy_type == 'mlp' else mb_obs)
                 value_loss = nn.functional.mse_loss(value_pred, mb_returns) * self.value_coef
                 value_loss.backward()
+                # Calculate total norm of gradients
+                value_grad_norm = torch.sqrt(sum(p.grad.pow(2).sum() for p in self.value.parameters() if p.grad is not None))
                 if self.max_grad_norm > 0:
                     torch.nn.utils.clip_grad_norm_(self.value.parameters(), self.max_grad_norm)
                 self.value_optimizer.step()
 
                 policy_loss_total += float(policy_loss.item())
                 value_loss_total += float(value_loss.item())
+                policy_grad_norm_total += float(policy_grad_norm.item())
+                value_grad_norm_total += float(value_grad_norm.item())
                 num_updates += 1
 
         if self.scheduler is not None:
@@ -377,8 +384,11 @@ class PPOAgent(Agent):
 
         avg_policy_loss = policy_loss_total / max(1, num_updates)
         avg_value_loss = value_loss_total / max(1, num_updates)
-        return {'policy_loss': avg_policy_loss, 'value_loss': avg_value_loss}
-
+        avg_policy_grad = policy_grad_norm_total / max(1, num_updates)
+        avg_value_grad = value_grad_norm_total / max(1, num_updates)
+        return {'policy_loss': avg_policy_loss, 'value_loss': avg_value_loss, 
+                'policy_grad_norm': avg_policy_grad, 'value_grad_norm': avg_value_grad}
+    
     def save(self, path: str):
         os.makedirs(path, exist_ok=True)
         torch.save(self.policy.state_dict(), os.path.join(path, 'policy.pth'))

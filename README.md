@@ -14,7 +14,7 @@ The framework is designed for flexibility, allowing users to easily swap out age
     -   **Proximal Policy Optimization (PPO)**: A robust policy-gradient agent with support for continuous, multi-dimensional actions and advanced policy networks (MLP, Conv1D, Transformer).
 
 -   **Diverse Trading Environments**:
-    -   `SimpleEnv`: A fast, single-asset environment for quick experiments.
+    -   `TradingEnv`: A fast, single-asset environment for quick experiments.
     -   `PortfolioEnv`: A multi-asset environment simulating portfolio management with leverage, margin calls, and risk-adjusted rewards.
     -   `OptionsEnv`: A specialized environment for trading options and their underlying assets, featuring delta hedging and Black-Scholes pricing.
 

@@ -23,6 +23,7 @@ __pycache__/
 # --- Project-Specific Generated Files ---
 # Experiment logs and model checkpoints from ExperimentLogger
 /runs/
+/saved_models/
 
 # Backtest results and reports
 *_history.csv

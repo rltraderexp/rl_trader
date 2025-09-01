@@ -4,11 +4,22 @@ import csv
 import json
 import time
 from pathlib import Path
+from typing import Optional # <-- Make sure this line is present
 
 class ExperimentLogger:
-    def __init__(self, base_dir: str = "runs"):
+    def __init__(self, base_dir: str = "runs", exp_name: Optional[str] = None):
+        """
+        Initializes the logger.
+
+        Args:
+            base_dir (str): The base directory to save all experiment runs.
+            exp_name (Optional[str]): A specific name for this experiment. 
+                                      If provided, the run folder will be named 
+                                      '{exp_name}_{timestamp}'. Otherwise, it will be 'run_{timestamp}'.
+        """
         self.base_dir = Path(base_dir)
-        run_name = "run_" + time.strftime("%Y%m%d_%H%M%S")
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        run_name = f"{exp_name}_{timestamp}" if exp_name else f"run_{timestamp}"
         self.run_dir = self.base_dir / run_name
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.metrics_file = self.run_dir / "metrics.csv"

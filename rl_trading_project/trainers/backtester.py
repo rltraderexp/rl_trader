@@ -22,7 +22,7 @@ class Backtester:
         Returns a results dict with timeseries metrics and summary statistics.
         """
         env = self.env_factory()
-        obs, _ = env.reset(start_index=self.start_index)
+        obs, _ = env.reset(options={'start_index': self.start_index})
         t = 0
         history = []
         start_time = time.time()
@@ -38,7 +38,6 @@ class Backtester:
             done = terminated or truncated
             row = {
                 't': t,
-                'timestamp': obs.get('timestamp'),
                 'reward': float(reward or 0.0),
                 **{k: float(v) if isinstance(v, (int, float, np.number)) else str(v) for k, v in info.items()}
             }
